@@ -1,0 +1,216 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+class Book {
+    private int bookId;
+    private String title;
+    private String author;
+    private boolean isAvailable;
+
+    public Book(int bookId, String title, String author) {
+        this.bookId = bookId;
+        this.title = title;
+        this.author = author;
+        this.isAvailable = true;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
+
+    public void display() {
+        System.out.println(bookId + " | " + title + " | " + author + " | " + (isAvailable ? "Available" : "Issued"));
+    }
+}
+
+class Member {
+    protected int memberId;
+    protected String name;
+
+    public Member(int memberId, String name) {
+        this.memberId = memberId;
+        this.name = name;
+    }
+
+    public int getMemberId() {
+        return memberId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void displayMember() {
+        System.out.println("Member ID: " + memberId + ", Name: " + name);
+    }
+}
+
+class StudentMember extends Member {
+    private int maxBooks;
+
+    public StudentMember(int memberId, String name, int maxBooks) {
+        super(memberId, name);
+        this.maxBooks = maxBooks;
+    }
+
+    public int getMaxBooks() {
+        return maxBooks;
+    }
+
+    @Override
+    public void displayMember() {
+        System.out.println("Student Member ID: " + memberId + ", Name: " + name + ", Max Books: " + maxBooks);
+    }
+}
+
+class Library {
+    private ArrayList<Book> books;
+    private HashMap<Integer, ArrayList<Book>> issuedBooks;
+
+    public Library() {
+        books = new ArrayList<>();
+        issuedBooks = new HashMap<>();
+    }
+
+    public void addBook(Book book) {
+        books.add(book);
+        System.out.println("Book added successfully!");
+    }
+
+    public void displayBooks() {
+        System.out.println("\n--- Available Books ---");
+        System.out.println("ID | Title | Author | Status");
+        for (Book book : books) {
+            book.display();
+        }
+    }
+
+    public void issueBook(int memberId, int bookId) {
+        for (Book book : books) {
+            if (book.getBookId() == bookId && book.isAvailable()) {
+                book.setAvailable(false);
+                
+                issuedBooks.putIfAbsent(memberId, new ArrayList<>());
+                issuedBooks.get(memberId).add(book);
+                
+                System.out.println("Book issued successfully to Member " + memberId);
+                return;
+            }
+        }
+        System.out.println("Book not available or not found.");
+    }
+
+    public void returnBook(int memberId, int bookId) {
+        if (issuedBooks.containsKey(memberId)) {
+            ArrayList<Book> memberBooks = issuedBooks.get(memberId);
+            for (Book book : memberBooks) {
+                if (book.getBookId() == bookId) {
+                    book.setAvailable(true);
+                    memberBooks.remove(book);
+                    System.out.println("Book returned successfully!");
+                    return;
+                }
+            }
+        }
+        System.out.println("Book not found in issued records.");
+    }
+
+    // Method Overloading - Polymorphism
+    public void searchBook(String title) {
+        System.out.println("\nSearch results by Title '" + title + "':");
+        boolean found = false;
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                book.display();
+                found = true;
+            }
+        }
+        if (!found) System.out.println("No books found.");
+    }
+
+    public void searchBook(String author, boolean byAuthor) {
+        System.out.println("\nSearch results by Author '" + author + "':");
+        boolean found = false;
+        for (Book book : books) {
+            if (book.getAuthor().equalsIgnoreCase(author)) {
+                book.display();
+                found = true;
+            }
+        }
+        if (!found) System.out.println("No books found.");
+    }
+
+    public void displayIssuedBooks(int memberId) {
+        System.out.println("\nBooks issued to Member " + memberId + ":");
+        if (issuedBooks.containsKey(memberId)) {
+            for (Book book : issuedBooks.get(memberId)) {
+                book.display();
+            }
+        } else {
+            System.out.println("No books issued.");
+        }
+    }
+}
+
+public class LibraryManagement {
+    public static void main(String[] args) {
+        Library library = new Library();
+
+        // Adding books
+        library.addBook(new Book(101, "Java Programming", "James Gosling"));
+        library.addBook(new Book(102, "Data Structures", "Robert Lafore"));
+        library.addBook(new Book(103, "Operating Systems", "Silberschatz"));
+        library.addBook(new Book(104, "Java Complete Reference", "Herbert Schildt"));
+
+        // Display all books
+        library.displayBooks();
+
+        // Creating members
+        Member m1 = new Member(1, "Rahul");
+        StudentMember s1 = new StudentMember(2, "Priya", 3);
+
+        System.out.println("\n--- Member Details ---");
+        m1.displayMember();
+        s1.displayMember();
+
+        // Issue books
+        System.out.println("\n--- Issuing Books ---");
+        library.issueBook(1, 101);
+        library.issueBook(2, 102);
+        library.issueBook(2, 103);
+
+        // Display after issue
+        library.displayBooks();
+
+        // Search functionality (Polymorphism)
+        library.searchBook("Java Programming");
+        library.searchBook("James Gosling", true);
+
+        // Display issued books
+        library.displayIssuedBooks(2);
+
+        // Return book
+        System.out.println("\n--- Returning Book ---");
+        library.returnBook(2, 102);
+
+        // Final display
+        library.displayBooks();
+    }
+}
